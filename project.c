@@ -1,30 +1,32 @@
-#include <bits/stdc++.h>
-using namespace std;
-typedef long long int ll;
-
-void solution(){
-    int n,x;cin>>n>>x;
-    int bits=__builtin_popcountll(x);
-    if (n<=bits){cout<<x;return;}
-    if ((n-bits)%2==0)cout<<x+n-bits;
-    else{
-        if (x>1){cout<<x+n-bits+1;return;}
-        if (x==1){cout<<n+3;return;}
-        else{
-            if (n==1){cout<<-1;return;}
-            else cout<<n+3;
-        }
+#include <stdio.h>
+#define MOD 1000000007
+typedef long long ll;
+ll modpow(ll base, ll exp) {
+    ll result = 1;
+    base %= MOD;
+    while (exp > 0) {
+        if (exp & 1)
+            result = result * base % MOD;
+        base = base * base % MOD;
+        exp >>= 1;
     }
+    return result;
 }
-
+ll modinv4() {
+    return modpow(4, MOD - 2); 
+}
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-    cout.tie(nullptr);
-    int t=1; 
-    cin>>t;
-    while (t--){
-        solution();
-        cout << '\n';
-    } return 0;
+    ll n;
+    scanf("%lld", &n);
+    ll total_cells = n * n;
+    ll f0 = modpow(2, total_cells);
+    ll half180 = (total_cells + 1) / 2;
+    ll f180 = modpow(2, half180);
+    ll orbits = (n * n + 3) / 4;
+    ll f90 = modpow(2, orbits);
+    ll f270 = f90; 
+    ll sum = (f0 + f180 + f90 + f270) % MOD;
+    ll result = sum * modinv4() % MOD;
+    printf("%lld\n", result);
+    return 0;
 }
