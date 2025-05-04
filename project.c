@@ -1,4 +1,4 @@
-
+https://vjudge.net/contest/714232
 
 //                                      ROAD TO HOSPITAL FASTLY FOR AN AMBULANCE
 
