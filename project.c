@@ -28,5 +28,5 @@ int main() {
     ll sum = (f0 + f180 + f90 + f270) % MOD;
     ll result = sum * modinv4() % MOD;
     printf("%lld\n", result);
-    return 0;
+    return 0;
 }
