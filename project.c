@@ -1,132 +1,110 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS lms;
+USE lms;
 
+-- Table: authors
+CREATE TABLE authors (
+    author_id INT PRIMARY KEY,
+    author_name VARCHAR(100),
+    author_address VARCHAR(255)
+);
 
-//                                      ROAD TO HOSPITAL FASTLY FOR AN AMBULANCE
+-- Sample data for authors
+INSERT INTO authors VALUES
+(1, 'J.K. Rowling', 'London, UK'),
+(2, 'George R.R. Martin', 'Bayonne, USA'),
+(3, 'Rabindranath Tagore', 'Kolkata, India');
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
+-- Table: publisher
+CREATE TABLE publisher (
+    publisher_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    address VARCHAR(255)
+);
 
-#define MAX 105
+-- Sample data for publisher
+INSERT INTO publisher VALUES
+(1, 'Penguin Random House', 'New York, USA'),
+(2, 'HarperCollins', 'London, UK'),
+(3, 'Ananda Publishers', 'Kolkata, India');
 
-int n, m;
-char a[MAX][MAX];
-bool vis[MAX][MAX];
-int parent[MAX][MAX]; // To store the previous direction
-int dx[4] = {0, 0, -1, 1}; // Direction arrays for movement
-int dy[4] = {1, -1, 0, 0};
+-- Table: books
+CREATE TABLE books (
+    book_id INT PRIMARY KEY,
+    book_title VARCHAR(200),
+    author_id INT,
+    publisher_id INT,
+    no_of_copies INT,
+    FOREIGN KEY (author_id) REFERENCES authors(author_id),
+    FOREIGN KEY (publisher_id) REFERENCES publisher(publisher_id)
+);
 
-// Movement directions as full words
-char arr[4][10] = {"Right", "Left", "UP", "Down"};
+-- Sample data for books
+INSERT INTO books VALUES
+(1, 'Harry Potter and the Sorcerer''s Stone', 1, 1, 10),
+(2, 'A Game of Thrones', 2, 2, 5),
+(3, 'Gitanjali', 3, 3, 8);
 
-// Structure to store a point (x, y) on the grid
-typedef struct {
-    int x, y;
-} Point;
+-- Table: borrowers
+CREATE TABLE borrowers (
+    borrower_id INT PRIMARY KEY,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    address VARCHAR(255),
+    email VARCHAR(100),
+    phone VARCHAR(15),
+    department VARCHAR(100)
+);
 
-Point start, end_pos; // Start and end positions
+-- Sample data for borrowers
+INSERT INTO borrowers VALUES
+(1, 'John', 'Doe', '123 Main St', 'john@example.com', '1234567890', 'CSE'),
+(2, 'Jane', 'Smith', '456 Elm St', 'jane@example.com', '0987654321', 'EEE'),
+(3, 'Rahul', 'Roy', '789 Park Ave', 'rahul@example.com', '1112223334', 'ME');
 
-// Function to check if the position is within bounds
-bool check(int ci, int cj) {
-    return ci >= 0 && cj >= 0 && ci < n && cj < m;
-}
+-- Table: booking
+CREATE TABLE booking (
+    booking_id INT PRIMARY KEY,
+    book_id INT,
+    borrower_id INT,
+    booking_date DATE,
+    available_date DATE,
+    FOREIGN KEY (book_id) REFERENCES books(book_id),
+    FOREIGN KEY (borrower_id) REFERENCES borrowers(borrower_id)
+);
 
-// Queue structure for BFS
-typedef struct {
-    Point data[MAX * MAX];
-    int front, rear;
-} Queue;
+-- Sample data for booking
+INSERT INTO booking VALUES
+(1, 1, 1, '2025-05-01', '2025-05-03'),
+(2, 2, 2, '2025-05-02', '2025-05-04'),
+(3, 3, 3, '2025-05-01', '2025-05-05');
 
-// Function to initialize the queue
-void initQueue(Queue *q) {
-    q->front = 0;
-    q->rear = 0;
-}
+-- Table: borrow_book
+CREATE TABLE borrow_book (
+    id INT PRIMARY KEY,
+    book_id INT,
+    borrower_id INT,
+    borrowing_date DATE,
+    duedate DATE,
+    FOREIGN KEY (book_id) REFERENCES books(book_id),
+    FOREIGN KEY (borrower_id) REFERENCES borrowers(borrower_id)
+);
 
-// Function to check if the queue is empty
-bool isEmpty(Queue *q) {
-    return q->front == q->rear;
-}
+-- Sample data for borrow_book
+INSERT INTO borrow_book VALUES
+(1, 1, 1, '2025-05-03', '2025-05-17'),
+(2, 2, 2, '2025-05-04', '2025-05-18');
 
-// Function to push an element into the queue
-void push(Queue *q, Point p) {
-    q->data[q->rear++] = p;
-}
+-- Table: fine
+CREATE TABLE fine (
+    fine_id INT PRIMARY KEY,
+    borrow_id INT,
+    fine_amount DECIMAL(6,2),
+    fine_date DATE,
+    FOREIGN KEY (borrow_id) REFERENCES borrow_book(id)
+);
 
-// Function to pop an element from the queue
-Point pop(Queue *q) {
-    return q->data[q->front++];
-}
-
-// BFS function to find the shortest path
-void bfs() {
-    Queue q;
-    initQueue(&q);
-    push(&q, start);
-    vis[start.x][start.y] = true;
-
-    while (!isEmpty(&q)) {
-        Point p = pop(&q);
-
-        // Checking all 4 possible directions
-        for (int i = 0; i < 4; i++) {
-            int ci = p.x + dx[i];
-            int cj = p.y + dy[i];
-
-            // If within bounds, not visited, and not a wall ('#')
-            if (check(ci, cj) && !vis[ci][cj] && a[ci][cj] != '#') {
-                vis[ci][cj] = true;
-                parent[ci][cj] = i; // Store the direction from which we arrived
-                push(&q, (Point){ci, cj});
-
-                // If we reach 'H', we stop BFS
-                if (a[ci][cj] == 'H') {
-                    end_pos = (Point){ci, cj};
-                    return;
-                }
-            }
-        }
-    }
-}
-
-int main() {
-    // Input grid dimensions
-    //FILE *file = fopen("project.txt", "r");
-    scanf("%d %d", &n, &m);
-
-    // Read the grid and find the start ('S') and end ('H') positions
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            scanf(" %c", &a[i][j]);
-            if (a[i][j] == 'S') start = (Point){i, j};
-            if (a[i][j] == 'H') end_pos = (Point){i, j};
-        }
-    }
-
-    bfs(); // Call BFS to find the shortest path
-
-    // If 'H' is not reachable
-    if (!vis[end_pos.x][end_pos.y]) {
-        printf("NO PATH FOUND\n");
-        return 0;
-    }
-
-    // Extract the shortest path
-    int path[MAX * MAX]; // Store direction indices
-    int len = 0;
-    Point cur = end_pos;
-
-    while (!(cur.x == start.x && cur.y == start.y)) {
-        int dir = parent[cur.x][cur.y];
-        path[len++] = dir; // Store the direction index
-        cur.x -= dx[dir]; // Move back to the previous position
-        cur.y -= dy[dir];
-    }
-
-    // Print the path in reverse order with full words
-    for (int i = 0; i < len ; i++) {
-        printf("%s ", arr[path[i]]);
-    }
-    printf("\n");
-
-    return 0;
-}
+-- Sample data for fine
+INSERT INTO fine VALUES
+(1, 1, 50.00, '2025-05-18'),
+(2, 2, 25.00, '2025-05-19');
